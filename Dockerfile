@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# Prevent Python from buffering stdout (useful for logging)
+# Prevent Python from buffering stdout (useful for logging)m
 ENV PYTHONUNBUFFERED=1
 
 # Install system dependencies
