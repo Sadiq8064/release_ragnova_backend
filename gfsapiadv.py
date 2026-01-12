@@ -34,61 +34,6 @@ def log_history_background(store_id: str, store_name: str, question: str, answer
     except Exception as e:
         print(f"Background logging failed: {e}")
 
-@app.get("/ask-by-id")
-def ask_question_by_id(
-    background_tasks: BackgroundTasks,
-    store_id: str = Query(..., description="Unique Store ID"),
-    question: str = Query(..., description="Question to ask"),
-    system_prompt: Optional[str] = Query(None, description="System prompt override")
-):
-    """
-    Ask a question to a specific store using its unique ID.
-    No user email required.
-    """
-    db = get_db()
-    
-    # 1. Verify store exists
-    store = db[COL_STORES].find_one({"store_id": store_id})
-    if not store:
-        return JSONResponse({"error": "Store not found"}, status_code=404)
-    
-    # 3. Setup Gemini
-    api_key = store["api_key_used"]
-    fs_name = store["file_search_store_name"]
-    
-    try:
-        client = init_gemini_client(api_key)
-        file_search_tool = types.Tool(file_search=types.FileSearch(file_search_store_names=[fs_name]))
-        
-        sys_inst = system_prompt
-        
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=question,
-            config=types.GenerateContentConfig(
-                temperature=0.2,
-                tools=[file_search_tool],
-                system_instruction=sys_inst
-            )
-        )
-        
-        response_text = getattr(response, "text", "")
-        
-        # 2. Log question AND answer in BACKGROUND
-        background_tasks.add_task(
-            log_history_background, 
-            store_id, 
-            store["store_name"], 
-            question, 
-            response_text
-        )
-        
-        return {
-            "success": True,
-            "response_text": response_text
-        }
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
         
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr, Field
@@ -163,7 +108,10 @@ def init_mongodb():
     except Exception as e:
         print(f"MongoDB initialization warning: {e}")
 
-init_mongodb()
+@app.on_event("startup")
+def startup_event():
+    init_mongodb()
+
 
 # ---------------- Helpers: Hashing ----------------
 
