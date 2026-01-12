@@ -17,7 +17,7 @@ import hashlib
 import uuid
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Body, Query, BackgroundTasks
-
+app = FastAPI(title="Gemini File Search RAG API (Multi-User & Analytics)")
 
 # Helper for background logging
 def log_history_background(store_id: str, store_name: str, question: str, answer: str):
@@ -125,7 +125,7 @@ COL_HISTORY = "question_history"
 
 # ----------------------------------------
 
-app = FastAPI(title="Gemini File Search RAG API (Multi-User & Analytics)")
+
 
 # ---------------- MongoDB Setup ----------------
 
