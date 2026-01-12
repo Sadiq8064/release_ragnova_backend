@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+aiofiles
+google-genai
+requests
+pydantic
+python-multipart
+pymongo
+email-validator
