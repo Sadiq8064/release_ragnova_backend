@@ -58,7 +58,7 @@ MAX_FILE_BYTES = 50 * 1024 * 1024      # 50 MB default file limit
 KEY_QUOTA_BYTES = 1 * 1024 * 1024 * 1024 # 1 GB limit per key
 POLL_INTERVAL = 2                       # seconds
 GEMINI_REST_BASE = "https://generativelanguage.googleapis.com/v1beta"
-
+BASE_URL = "https://release-ragnova-backend-916628151603.asia-south1.run.app"
 # MongoDB configuration
 MONGODB_URI = "mongodb+srv://wisdomkagyan_db_user:gqbCoXr99sKOcXEw@cluster0.itxqujm.mongodb.net/?appName=Cluster0"
 DATABASE_NAME = "gemini_file_search_v2" # Updated DB name for new schema
@@ -686,6 +686,31 @@ def ask_question_by_id(
         }
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+        
+@app.get("/stores/link")
+def get_store_link(email: str, store_name: str):
+    """
+    Generate a shareable 'Ask by ID' link for a specific store.
+    """
+    db = get_db()
+    store = db[COL_STORES].find_one({"user_email": email, "store_name": store_name})
+    
+    if not store:
+        return JSONResponse({"error": "Store not found"}, status_code=404)
+        
+    store_id = store.get("store_id")
+    if not store_id:
+        return JSONResponse({"error": "Store has no ID (legacy store?)"}, status_code=400)
+        
+    share_url = f"{BASE_URL}/ask-by-id?store_id={store_id}&question=WRITE_YOUR_QUESTION_HERE"
+    
+    return {
+        "success": True,
+        "store_name": store_name,
+        "store_id": store_id,
+        "shareable_url": share_url,
+        "instruction": "Replace 'WRITE_YOUR_QUESTION_HERE' in the URL with your actual question."
+    }
 
 @app.get("/health")
 def health():
