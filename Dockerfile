@@ -23,4 +23,4 @@ EXPOSE 8000
 
 # Start API
 # Changed 'gfsapi:app' to 'gemini_file_search_api:app' to match your actual filename
-CMD ["uvicorn", "gemini_file_search_api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "gfsapiadv:app", "--host", "0.0.0.0", "--port", "8000"]
